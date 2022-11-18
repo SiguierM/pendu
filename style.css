@@ -1,0 +1,27 @@
+#answer li {
+    display: inline-block;
+    margin : 10px; 
+}
+
+#guess button {
+    display: inline-block;
+    margin: 3px;
+}
+
+.disabled {
+    opacity: .4;
+}
+
+body {
+    text-align: center;
+}
+
+p {
+    color: gray; 
+    font-size: 10px;
+}
+
+#btreset {
+    background-color: black;
+    color: white;
+}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css"/>
+        <title>Le pendu</title>
+    </head>
+    <body>
+        <h1>Le jeu du pendu</h1>
+        <h3>Thème : Jeux-vidéos</h3>
+        <div id="errors">
+            <p></p>
+        </div>
+
+        <div id="answer">
+            <ul></ul>
+        </div>
+
+        <div id="guess">
+            <ul></ul>
+        </div>
+        <div>
+            <input type="checkbox" id="box1" onclick="return false">
+            <label for="box1">Erreur 1</label>
+            <input type="checkbox" id="box2" onclick="return false">
+            <label for="box2">Erreur 2</label>
+            <input type="checkbox" id="box3" onclick="return false">
+            <label for="box3">Erreur 3</label>
+            <input type="checkbox" id="box4" onclick="return false">
+            <label for="box4">Erreur 4</label>
+            <input type="checkbox" id="box5" onclick="return false">
+            <label for="box5">Erreur 5</label>
+            <input type="checkbox" id="box6" onclick="return false">
+            <label for="box6">Erreur 6</label>
+          </div>
+
+        <button id="btreset" onclick="reset()">Nouvelle partie</button>
+
+        <script type="text/javascript">
+
+            // ● Donner la possibilité de recommencer une partie => A faire; marche pas
+            // Créer des catégories pour deviner persos selon le jeu
+
+            //éléments vides
+            const comp = {
+                errors: null, 
+                answer: null, 
+                guess: null
+            };
+            //tableau de différents mots
+            const words = ['APEX', 'BATTLEFIELD','BORDERLANDS', 'CSGO', 'DESTINY', 'DIABLO', 'DOFUS', 'DOOM', 'FIFA',
+            'FORTNITE', 'HALO', 'MARIOKART', 'MINECRAFT', 'OVERWATCH', 'PAYDAY', 'POKEMON', 'PORTAL', 'SKYRIM', "WARCRAFT", 'WARZONE', 'ZELDA' ]
+            let guess = [];
+            let word ='';
+            let wordMapping = []; 
+            let guessMapping = []; 
+            let errorsCount = 0; 
+            let errorsMax = 6; 
+
+            //démarrage
+            const init = () => {
+                comp.errors = document.querySelector('#errors');
+                comp.answer = document.querySelector('#answer');
+                comp.guess = document.querySelector('#guess');
+
+                //sélection d'un mot + le cacher
+                word = pickWord(); 
+                wordMapping = getWordMapping(word); 
+                //sélection lettres + 
+                guess = generateGuess();
+                guessMapping = getGuessMapping(guess); 
+                //afficher le mot
+                displayWord(wordMapping); 
+                //afficher les lettres
+                displayGuess(guessMapping); 
+                //afficher les erreurs
+                displayErrors();
+                //entendre souris
+                comp.guess.addEventListener('click', ({target}) => {
+                    if (target.matches('button')){
+                        checkLetter(target.innerHTML); 
+                    }
+                }); 
+                // / clavier
+                document.addEventListener('keydown', ({keyCode})=> {
+                    const letter = String.fromCharCode(keyCode); 
+                    if(keyCode >= 65 && keyCode <=90){
+                        checkLetter(letter); 
+                    }
+                }); 
+            }; 
+
+            //lettres présentes ou non dans le mot
+            const checkLetter = (letter)=> {
+                    let isLetterInWord = false; 
+                    let isAllLettersFound = true; 
+                    wordMapping.forEach((letterMapping)=> {
+                        if (letterMapping.letter === letter){
+                            letterMapping.isVisible = true; 
+                            isLetterInWord = true; 
+                        }if (letterMapping.isVisible === false){
+                            isAllLettersFound = false;
+                        }
+                    }); guessMapping.forEach((letterMapping) =>{
+                        if (letterMapping.letter === letter){
+                            letterMapping.isChosen = true; 
+                        }
+                    }); displayGuess(guessMapping);
+                     if (isLetterInWord === true){
+                        displayWord(wordMapping); 
+                    } else {
+                        errorsCount++; 
+                        displayErrors();
+                        // check des box selon nombres erreurs
+                        if (errorsCount == 1){
+                            document.getElementById('box1').checked = true}
+                        if (errorsCount == 2){
+                            document.getElementById('box2').checked = true};
+                        if (errorsCount == 3){
+                            document.getElementById('box3').checked = true};
+                        if (errorsCount == 4){
+                            document.getElementById('box4').checked = true};
+                        if (errorsCount == 5){
+                            document.getElementById('box5').checked = true};
+                        if (errorsCount == 6){
+                            document.getElementById('box6').checked = true};
+                    }
+                    
+                    //fin du jeu si mot trouvé ou trop d'erreurs
+                    if (errorsCount === errorsMax){
+                        lost(); 
+                    }
+                    if (isAllLettersFound){
+                        win();
+                    }
+                }
+
+            const pickWord = () =>{
+                const randomIndex = getRandomInt(0, words.length-1); 
+                return words[randomIndex]; 
+            }
+
+            const getRandomInt= (min, max) =>{
+                min = Math.ceil(min); 
+                max = Math.ceil(max); 
+                return Math.floor(Math.random()* (max-min+1))+min; 
+            }
+
+            const getWordMapping = (word) => {
+                const wordArr= word.split(''); //transforme string en array
+                const wordMapping = wordArr.map((letter, index) => {
+                    let isVisible = false; 
+                    if (index === 0 || index == wordArr.length-1){
+                        isVisible = true;
+                    }
+                    return {
+                        letter, 
+                        isVisible
+                    }
+                });
+                return wordMapping;
+            };
+
+            const generateGuess = () => {
+                const guess = []; 
+                for(let index = 65; index <= 90; index++){
+                    guess.push(String.fromCharCode(index));
+                } return guess; 
+            };
+
+            const getGuessMapping = (guess) => {
+                const guessMapping= guess.map((letter)=>{
+                    return {
+                        letter, 
+                        isChosen: false
+                    };
+                });
+                return guessMapping; 
+            };
+
+            const displayWord = (wordMapping) => {
+                const wordHtml = wordMapping.map((letterMapping) => {
+                    if (letterMapping.isVisible){
+                        return `<li>${letterMapping.letter}</li>`;
+                    } else {
+                        return `<li>_</li>`;
+                    }
+                }); comp.answer.querySelector('ul').innerHTML = wordHtml.join(''); //transforme array en string
+            }; 
+
+            const displayGuess = (guessMapping) => {
+                const guessHtml = guessMapping.map((letterMapping)=> {
+                    if(letterMapping.isChosen === false){
+                        return `<button>${letterMapping.letter}</button>`;
+                    } else {
+                        return `<button class="disabled">${letterMapping.letter}</button>`;
+                    }
+                }); comp.guess.querySelector('ul').innerHTML = guessHtml.join('');
+            }; 
+
+            const displayErrors = () => {
+                comp.errors.innerHTML = `Erreurs : ${errorsCount} / ${errorsMax}`;
+            }; 
+
+            const lost = () => {
+                comp.guess.innerHTML = `<h2>Tu as perdu, nullos</h2>
+                <p>Le mot était ${word}</p>`; 
+            }; 
+
+            const win = () => {
+                comp.guess.innerHTML= `<h1>Bravo tu as trouvé le mot !</h1>`; 
+            }; 
+
+            const reset = () => {
+                errorsCount = 0;
+                init();
+            }
+            // document.write(`<p>La liste des mots est : ${words} </p>`)
+            window.addEventListener('load', init);
+        </script>
+        <p>La liste des mots est : <br>
+            -APEX, <br>
+            -BATTLEFIELD, <br>
+            -BORDERLANDS, <br>
+            -CSGO, <br> 
+            -DESTINY, <br> 
+            -DIABLO, <br> 
+            -DOFUS, <br> 
+            -DOOM, <br>
+            -FIFA, <br>
+            -FORTNITE, <br>
+            -HALO, <br>
+            -MARIOKART, <br>
+            -MINECRAFT, <br> 
+            -OVERWATCH, <br>
+            -PAYDAY, <br>
+            -POKEMON, <br>
+            -PORTAL, <br> 
+            -SKYRIM, <br>
+            -WARCRAFT, <br> 
+            -WARZONE, <br> 
+            -ZELDA <br> </p>
+    </body>
+</html>
